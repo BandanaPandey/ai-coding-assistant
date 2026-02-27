@@ -47,4 +47,9 @@ group :development, :test do
 
   # Omakase Ruby styling [https://github.com/rails/rubocop-rails-omakase/]
   gem "rubocop-rails-omakase", require: false
+
+  gem 'httparty', '~> 0.24.0'
+
+  gem 'pgvector'
+  gem 'dotenv-rails'
 end
