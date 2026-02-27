@@ -1,0 +1,2 @@
+class ChatSession < ApplicationRecord
+end
