@@ -1,6 +1,7 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
+const { askAI } = require("./api");
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -32,24 +33,16 @@ function activate(context) {
 				return;
 			}
 			console.log('Selected code:', selection);
+			 vscode.window.withProgress({
+				location: vscode.ProgressLocation.Notification,
+				title: "AI is thinking...",
+				cancellable: false
+				}, async () => {
 
-			const response = await fetch('http://localhost:3000/api/chats/1/message', {
-				method: 'POST',
-				headers: {
-				'Content-Type': 'application/json',
-				// Optional auth header:
-				// 'Authorization': 'Bearer YOUR_API_KEY'
-				},
-				body: JSON.stringify({ message: selection })
-			});
+				const result = await askAI(selection);
 
-			if (!response.ok) {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
-
-			const data = await response.json();
-			console.log('Response from API:', data);
-			vscode.window.showInformationMessage(`AI Response: ${data.response}`);
+				vscode.window.showInformationMessage(result.response);
+				});
 		} catch (error) {
 			console.error('An error occurred:', error);
 			vscode.window.showErrorMessage('An error occurred: ' + error.message);
