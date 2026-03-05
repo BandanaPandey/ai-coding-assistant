@@ -11,69 +11,79 @@ const { askAI } = require("./api");
  */
 function activate(context) {
 
-	// Use the console to output diagnostic information (console.log) and errors (console.error)
-	// This line of code will only be executed once when your extension is activated
-	console.log('Congratulations, your extension "assistant-vscode-extension" is now active!');
+  const explainCommand = vscode.commands.registerCommand('assistant-vscode-extension.explain', () => {
+    handleAiRequest('explain');
+  });
 
-	// The command has been defined in the package.json file
-	// Now provide the implementation of the command with  registerCommand
-	// The commandId parameter must match the command field in package.json
-	const disposable = vscode.commands.registerCommand('assistant-vscode-extension.codingAssistant', async function () {
-		// The code you place here will be executed every time your command is executed
+  const refactorCommand = vscode.commands.registerCommand('assistant-vscode-extension.refactor', () => {
+    handleAiRequest('refactor');
+  });
 
-		try {
-			const editor = vscode.window.activeTextEditor;
-			if (!editor) {
-				vscode.window.showWarningMessage('No active editor found.');
-				return;
-			}
-			const selection = editor.document.getText(editor.selection);
-			if (!selection || selection.trim() === '') {
-				vscode.window.showWarningMessage('Please select some code first.');
-				return;
-			}
-			console.log('Selected code:', selection);
-			const taskType = await vscode.window.showQuickPick(
-				['explain', 'refactor', 'generate_tests'],
-				{ placeHolder: 'Select AI action' }
-			);
+  const generateTestsCommand = vscode.commands.registerCommand('assistant-vscode-extension.generateTests', () => {
+    handleAiRequest('generate_tests');
+  });
 
-			if (!taskType) return;
-			 vscode.window.withProgress({
-				location: vscode.ProgressLocation.Notification,
-				title: "AI is thinking...",
-				cancellable: false
-				}, async () => {
+  context.subscriptions.push(
+    explainCommand,
+    refactorCommand,
+    generateTestsCommand
+  );
+}
 
-				const result = await askAI(selection, taskType);
+/**
+ * Common handler for all AI actions
+ */
+async function handleAiRequest(taskType) {
+  try {
+    const editor = vscode.window.activeTextEditor;
 
-				//vscode.window.showInformationMessage(result.response);
-				// Show result in panel instead of popup
-				const panel = vscode.window.createWebviewPanel(
-					'aiResponse',
-					`AI - ${taskType}`,
-					vscode.ViewColumn.Beside,
-					{}
-				);
+    if (!editor) {
+      vscode.window.showWarningMessage('No active editor found.');
+      return;
+    }
 
-				panel.webview.html = `
-					<html>
-					<body>
-						<pre>${result.response}</pre>
-					</body>
-					</html>
-				`;
-				});
-		} catch (error) {
-			console.error('An error occurred:', error);
-			vscode.window.showErrorMessage('An error occurred: ' + error.message);
-			return;
-		}
-		// Display a message box to the user
-		vscode.window.showInformationMessage('AI Coding Assistant executed successfully!');
-	});
+    const selection = editor.document.getText(editor.selection);
 
-	context.subscriptions.push(disposable);
+    if (!selection || selection.trim() === '') {
+      vscode.window.showWarningMessage('Please select some code first.');
+      return;
+    }
+
+    vscode.window.withProgress({
+      location: vscode.ProgressLocation.Notification,
+      title: `AI is ${taskType.replace('_', ' ')}...`,
+      cancellable: false
+    }, async () => {
+
+      const result = await askAI(selection, taskType);
+
+      showResultInPanel(taskType,result.response);
+    });
+
+  } catch (error) {
+    console.error(error);
+    vscode.window.showErrorMessage(`AI Error: ${error.message}`);
+  }
+}
+
+/**
+ * Render response in side panel
+ */
+function showResultInPanel(taskType, content) {
+  const panel = vscode.window.createWebviewPanel(
+    'aiResponse',
+    `AI - ${taskType.replace('_', ' ')}`,
+    vscode.ViewColumn.Beside,
+    { enableScripts: false }
+  );
+
+  panel.webview.html = `
+    <html>
+      <body>
+        <pre style="white-space: pre-wrap;">${content}</pre>
+      </body>
+    </html>
+  `;
 }
 
 // This method is called when your extension is deactivated

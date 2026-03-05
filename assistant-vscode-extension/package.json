@@ -12,10 +12,20 @@
   "activationEvents": [],
   "main": "./extension.js",
   "contributes": {
-    "commands": [{
-      "command": "assistant-vscode-extension.codingAssistant",
-      "title": "AI Coding Assistant"
-    }]
+   "commands": [
+      {
+        "command": "assistant-vscode-extension.explain",
+        "title": "AI: Explain Code"
+      },
+      {
+        "command": "assistant-vscode-extension.refactor",
+        "title": "AI: Refactor Code"
+      },
+      {
+        "command": "assistant-vscode-extension.generateTests",
+        "title": "AI: Generate Tests"
+      }
+    ]
   },
   "scripts": {
     "lint": "eslint .",
