@@ -28,6 +28,8 @@ class Api::ChatsController < ApplicationController
       "#{m.role.upcase}: #{m.content}"
     end.join("\n")
 
-    Llm::PromptBuilder.new(history).build
+    task_type = params[:task_type] || "explain"
+
+    Llm::PromptBuilder.new(history, task_type).build
   end
 end
