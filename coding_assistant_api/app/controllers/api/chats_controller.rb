@@ -7,21 +7,20 @@ class Api::ChatsController < ApplicationController
 
   def message
     chat = ChatSession.find(params[:id])
-    user_input = params[:message]
+    chat.messages.create!(role: "user", content: params[:message])
 
-    chat.messages.create!(role: "user", content: user_input)
-
-    context = build_context(chat)
-
-    llm = Llm::Client.new
-    ai_response = llm.generate(prompt: context)
-
+    ai_response = generate_ai_response(chat)
     chat.messages.create!(role: "assistant", content: ai_response)
 
     render json: { response: ai_response }
   end
 
   private
+
+  def generate_ai_response(chat)
+    context = build_context(chat)
+    Llm::Client.new.generate(prompt: context)
+  end
 
   def build_context(chat)
     history = chat.messages.last(10).map do |m|
