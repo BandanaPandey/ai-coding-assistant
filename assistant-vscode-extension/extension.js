@@ -33,15 +33,36 @@ function activate(context) {
 				return;
 			}
 			console.log('Selected code:', selection);
+			const taskType = await vscode.window.showQuickPick(
+				['explain', 'refactor', 'generate_tests'],
+				{ placeHolder: 'Select AI action' }
+			);
+
+			if (!taskType) return;
 			 vscode.window.withProgress({
 				location: vscode.ProgressLocation.Notification,
 				title: "AI is thinking...",
 				cancellable: false
 				}, async () => {
 
-				const result = await askAI(selection);
+				const result = await askAI(selection, taskType);
 
-				vscode.window.showInformationMessage(result.response);
+				//vscode.window.showInformationMessage(result.response);
+				// Show result in panel instead of popup
+				const panel = vscode.window.createWebviewPanel(
+					'aiResponse',
+					`AI - ${taskType}`,
+					vscode.ViewColumn.Beside,
+					{}
+				);
+
+				panel.webview.html = `
+					<html>
+					<body>
+						<pre>${result.response}</pre>
+					</body>
+					</html>
+				`;
 				});
 		} catch (error) {
 			console.error('An error occurred:', error);

@@ -1,4 +1,4 @@
-async function askAI(message) {
+async function askAI(message, taskType) {
   const response = await fetch('http://localhost:3000/api/chats/1/message', {
 				method: 'POST',
 				headers: {
@@ -6,7 +6,7 @@ async function askAI(message) {
 				// Optional auth header:
 				// 'Authorization': 'Bearer YOUR_API_KEY'
 				},
-				body: JSON.stringify({ message: message })
+				body: JSON.stringify({ message: message, task_type: taskType })
 	    });
 
     if (!response.ok) {
