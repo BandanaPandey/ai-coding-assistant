@@ -44,7 +44,24 @@
           "group": "navigation"
         }
       ]
-    }
+    },
+    "keybindings": [
+      {
+        "command": "assistant-vscode-extension.explain",
+        "key": "ctrl+shift+e",
+        "when": "editorTextFocus && editorHasSelection"
+      },
+      {
+        "command": "assistant-vscode-extension.refactor",
+        "key": "ctrl+shift+r",
+        "when": "editorTextFocus && editorHasSelection"
+      },
+      {
+        "command": "assistant-vscode-extension.generateTests",
+        "key": "ctrl+shift+t",
+        "when": "editorTextFocus && editorHasSelection"
+      }
+]
   },
   "scripts": {
     "lint": "eslint .",
