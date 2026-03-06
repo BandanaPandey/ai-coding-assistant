@@ -1,7 +1,7 @@
 {
   "name": "assistant-vscode-extension",
-  "displayName": "assistant-vscode-extension",
-  "description": "Extension for Coding Assistance",
+  "displayName": "GOAT-AI Coding Assistant",
+  "description": "AI-powered coding assistant for explaining, refactoring, and generating tests.",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.109.0"
@@ -15,17 +15,36 @@
    "commands": [
       {
         "command": "assistant-vscode-extension.explain",
-        "title": "AI: Explain Code"
+        "title": "GOAT-AI: Explain Code"
       },
       {
         "command": "assistant-vscode-extension.refactor",
-        "title": "AI: Refactor Code"
+        "title": "GOAT-AI: Refactor Code"
       },
       {
         "command": "assistant-vscode-extension.generateTests",
-        "title": "AI: Generate Tests"
+        "title": "GOAT-AI: Generate Tests"
       }
-    ]
+    ],
+    "menus": {
+      "editor/context": [
+        {
+          "command": "assistant-vscode-extension.explain",
+          "when": "editorHasSelection",
+          "group": "navigation"
+        },
+        {
+          "command": "assistant-vscode-extension.refactor",
+          "when": "editorHasSelection",
+          "group": "navigation"
+        },
+        {
+          "command": "assistant-vscode-extension.generateTests",
+          "when": "editorHasSelection",
+          "group": "navigation"
+        }
+      ]
+    }
   },
   "scripts": {
     "lint": "eslint .",

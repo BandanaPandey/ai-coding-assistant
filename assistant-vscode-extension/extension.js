@@ -51,7 +51,7 @@ async function handleAiRequest(taskType) {
 
     vscode.window.withProgress({
       location: vscode.ProgressLocation.Notification,
-      title: `AI is ${taskType.replace('_', ' ')}...`,
+      title: `GOAT-AI is performing following action: ${taskType.replace('_', ' ')}...`,
       cancellable: false
     }, async () => {
 
