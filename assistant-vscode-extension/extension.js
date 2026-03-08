@@ -57,7 +57,11 @@ async function handleAiRequest(taskType) {
 
       const result = await askAI(selection, taskType);
 
-      showResultInPanel(taskType,result.response);
+      if (taskType === "refactor") {
+        await handleRefactorReplace(editor, result.response);
+      } else {
+        showResultInPanel(taskType,result.response);
+      }
     });
 
   } catch (error) {
@@ -66,25 +70,66 @@ async function handleAiRequest(taskType) {
   }
 }
 
+async function handleRefactorReplace(editor, refactoredCode) {
+
+  const action = await vscode.window.showInformationMessage(
+    "GOAT-AI generated refactored code.",
+    "Replace Selection",
+    "Preview",
+    "Cancel"
+  );
+
+  if (action === "Preview") {
+    showResultInPanel("Refactored Code", refactoredCode);
+    return;
+  }
+
+  if (action === "Replace Selection") {
+
+    await editor.edit(editBuilder => {
+      editBuilder.replace(editor.selection, refactoredCode);
+    });
+
+    vscode.window.showInformationMessage("Code replaced with GOAT-AI refactored version.");
+  }
+}
+
 /**
  * Render response in side panel
  */
-function showResultInPanel(taskType, content) {
+function showResultInPanel(title, content) {
+
   const panel = vscode.window.createWebviewPanel(
-    'aiResponse',
-    `AI - ${taskType.replace('_', ' ')}`,
+    'aiResult',
+    title,
     vscode.ViewColumn.Beside,
-    { enableScripts: false }
+    {}
   );
 
   panel.webview.html = `
     <html>
       <body>
-        <pre style="white-space: pre-wrap;">${content}</pre>
+        <pre style="font-size:14px;line-height:1.4;">${content}</pre>
       </body>
     </html>
   `;
 }
+// function showResultInPanel(taskType, content) {
+//   const panel = vscode.window.createWebviewPanel(
+//     'aiResponse',
+//     `AI - ${taskType.replace('_', ' ')}`,
+//     vscode.ViewColumn.Beside,
+//     { enableScripts: false }
+//   );
+
+//   panel.webview.html = `
+//     <html>
+//       <body>
+//         <pre style="white-space: pre-wrap;">${content}</pre>
+//       </body>
+//     </html>
+//   `;
+// }
 
 // This method is called when your extension is deactivated
 function deactivate() {}
