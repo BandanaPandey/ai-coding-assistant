@@ -42,7 +42,12 @@ async function handleAiRequest(taskType) {
       return;
     }
 
-    const selection = editor.document.getText(editor.selection);
+    const document = editor.document;
+    const language = document.languageId;
+
+    const edselection = editor.selection;
+
+    const selection = document.getText(edselection);
 
     if (!selection || selection.trim() === '') {
       vscode.window.showWarningMessage('Please select some code first.');
@@ -58,7 +63,38 @@ async function handleAiRequest(taskType) {
       const result = await askAI(selection, taskType);
 
       if (taskType === "refactor") {
-        await handleRefactorReplace(editor, result.response);
+        const cleanedRefactored = cleanCode(result.response);
+        /*
+        Store document + range BEFORE opening diff
+        */
+        const documentUri = document.uri;
+        const range = new vscode.Range(
+          edselection.start,
+          edselection.end
+        );
+        //await showDiff(selection, cleanedRefactored);
+        await showDiff(selection, cleanedRefactored, language);
+
+        const action = await vscode.window.showInformationMessage(
+          "Apply GOAT-AI refactor?",
+          "Apply",
+          "Cancel"
+        );
+
+        if (action === "Apply") {
+          //await replaceCode(editor, cleanedRefactored);
+          //vscode.window.showInformationMessage("Code refactored successfully.");
+          await applyRefactor(
+            documentUri,
+            range,
+            cleanedRefactored
+          );
+
+          vscode.window.showInformationMessage(
+            "Refactored code applied successfully"
+          );
+        }
+        //await handleRefactorReplace(editor, result.response);
       } else {
         showResultInPanel(taskType,result.response);
       }
@@ -70,28 +106,57 @@ async function handleAiRequest(taskType) {
   }
 }
 
-async function handleRefactorReplace(editor, refactoredCode) {
+/*
+Show diff preview
+*/
+async function showDiff(original, refactored, language) {
 
-  const action = await vscode.window.showInformationMessage(
-    "GOAT-AI generated refactored code.",
-    "Replace Selection",
-    "Preview",
-    "Cancel"
+  const originalDoc = await vscode.workspace.openTextDocument({
+    content: original,
+    language: language
+  });
+
+  const refactoredDoc = await vscode.workspace.openTextDocument({
+    content: refactored,
+    language: language
+  });
+
+  await vscode.commands.executeCommand(
+    'vscode.diff',
+    originalDoc.uri,
+    refactoredDoc.uri,
+    'AI Refactor Preview'
   );
+}
 
-  if (action === "Preview") {
-    showResultInPanel("Refactored Code", refactoredCode);
-    return;
-  }
+/*
+Apply refactored code safely
+*/
+async function applyRefactor(documentUri, range, newCode) {
 
-  if (action === "Replace Selection") {
+  const workspaceEdit = new vscode.WorkspaceEdit();
 
-    await editor.edit(editBuilder => {
-      editBuilder.replace(editor.selection, refactoredCode);
-    });
+  workspaceEdit.replace(documentUri, range, newCode);
 
-    vscode.window.showInformationMessage("Code replaced with GOAT-AI refactored version.");
-  }
+  await vscode.workspace.applyEdit(workspaceEdit);
+
+  const document = await vscode.workspace.openTextDocument(documentUri);
+
+  await vscode.window.showTextDocument(document);
+}
+
+
+/*
+Remove markdown code fences returned by LLM
+*/
+function cleanCode(text) {
+
+  if (!text) return "";
+
+  return text
+    .replace(/```[\w]*\n/g, '')
+    .replace(/```/g, '')
+    .trim();
 }
 
 /**
@@ -114,22 +179,6 @@ function showResultInPanel(title, content) {
     </html>
   `;
 }
-// function showResultInPanel(taskType, content) {
-//   const panel = vscode.window.createWebviewPanel(
-//     'aiResponse',
-//     `AI - ${taskType.replace('_', ' ')}`,
-//     vscode.ViewColumn.Beside,
-//     { enableScripts: false }
-//   );
-
-//   panel.webview.html = `
-//     <html>
-//       <body>
-//         <pre style="white-space: pre-wrap;">${content}</pre>
-//       </body>
-//     </html>
-//   `;
-// }
 
 // This method is called when your extension is deactivated
 function deactivate() {}
