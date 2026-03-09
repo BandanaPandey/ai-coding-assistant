@@ -10,13 +10,22 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_02_27_153833) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_09_105958) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
+  enable_extension "vector"
 
   create_table "chat_sessions", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "title"
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "code_embeddings", force: :cascade do |t|
+    t.text "content"
+    t.datetime "created_at", null: false
+    t.vector "embedding", limit: 768
+    t.string "file_path"
     t.datetime "updated_at", null: false
   end
 
