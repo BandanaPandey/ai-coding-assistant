@@ -50,6 +50,9 @@ group :development, :test do
 
   gem 'httparty', '~> 0.24.0'
 
-  gem 'pgvector'
   gem 'dotenv-rails'
+
+  gem 'pgvector'
+
+  gem 'neighbor'
 end
