@@ -54,13 +54,27 @@ async function handleAiRequest(taskType) {
       return;
     }
 
+    const filePath = document.uri.fsPath;
+
+    const workspaceFolder = vscode.workspace.workspaceFolders?.[0]?.uri.fsPath || "";
+
+    const surroundingCode = getSurroundingCode(document, edselection);
+
     vscode.window.withProgress({
       location: vscode.ProgressLocation.Notification,
-      title: `GOAT-AI is performing following action: ${taskType.replace('_', ' ')}...`,
+      title: `GOAT-AI running task: ${taskType.replace('_', ' ')}...`,
       cancellable: false
     }, async () => {
 
-      const result = await askAI(selection, taskType);
+      //const result = await askAI(selection, taskType);
+      const result = await askAI({
+        code: selection,
+        task_type: taskType,
+        file_path: filePath,
+        repo_path: workspaceFolder,
+        language: language,
+        surrounding_code: surroundingCode
+      });
 
       if (taskType === "refactor") {
         const cleanedRefactored = cleanCode(result.response);
@@ -105,6 +119,28 @@ async function handleAiRequest(taskType) {
     vscode.window.showErrorMessage(`AI Error: ${error.message}`);
   }
 }
+
+/*
+Extract surrounding code for better RAG retrieval
+*/
+function getSurroundingCode(document, selection) {
+
+  const startLine = Math.max(selection.start.line - 20, 0);
+  const endLine = Math.min(
+    selection.end.line + 20,
+    document.lineCount
+  );
+
+  const range = new vscode.Range(
+    startLine,
+    0,
+    endLine,
+    0
+  );
+
+  return document.getText(range);
+}
+
 
 /*
 Show diff preview
