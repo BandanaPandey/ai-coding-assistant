@@ -1,0 +1,2 @@
+class CodeEmbedding < ApplicationRecord
+end
