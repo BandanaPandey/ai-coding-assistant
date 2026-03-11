@@ -2,7 +2,7 @@
 module Rag
   class Retriever
     def self.search(query, limit: 5)
-      embedding = Rag::Embedder.embed(query)
+      embedding = Embeddings::Client.new.embed(query)
       results = CodeEmbedding
               .order(
                 Arel.sql("embedding <-> '#{embedding}'")

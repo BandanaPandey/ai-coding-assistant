@@ -16,7 +16,7 @@ module Rag
       files.each do |file|
         content = File.read(file)
         chunks(content).each do |chunk|
-          embedding = Rag::Embedder.embed(chunk)
+          embedding = Embeddings::Client.new.embed(chunk)
           CodeEmbedding.create!(
             file_path: file,
             content: chunk,
