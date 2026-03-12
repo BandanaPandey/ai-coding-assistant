@@ -6,7 +6,7 @@ module Llm
       include HTTParty
       base_uri "https://api.openai.com"
 
-      def generate(prompt:, temperature: 0.7, max_tokens: 1000)
+      def generate(prompt:, model:, temperature:, max_tokens:)
         response = self.class.post(
           "/v1/chat/completions",
           headers: {
@@ -14,7 +14,7 @@ module Llm
             "Content-Type" => "application/json"
           },
           body: {
-            model: ENV["LLM_MODEL"],
+            model: model,
             messages: [
               { role: "user", content: prompt }
             ],
@@ -22,7 +22,6 @@ module Llm
             max_tokens: max_tokens
           }.to_json
         )
-
         JSON.parse(response.body)["choices"][0]["message"]["content"]
       end
     end

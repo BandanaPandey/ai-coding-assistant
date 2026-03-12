@@ -6,11 +6,13 @@ module Llm
       include HTTParty
       base_uri ENV["OLLAMA_URL"]
 
-      def generate(prompt:, temperature: 0.7, max_tokens: 1000)
+      def generate(prompt:, model:, temperature:, max_tokens:)
+        puts "Sending prompt to Ollama:\n#{prompt}"
+        
         response = self.class.post(
           "/api/generate",
           body: {
-            model: ENV["LLM_MODEL"],
+            model: model,
             prompt: prompt,
             options: {
               temperature: temperature,

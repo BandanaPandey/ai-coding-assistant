@@ -1,7 +1,7 @@
 module Llm
   module Providers
     class BaseProvider
-      def generate(prompt:, temperature: 0.7, max_tokens: 1000)
+      def generate(prompt:, model:, temperature:, max_tokens:)
         raise NotImplementedError
       end
 

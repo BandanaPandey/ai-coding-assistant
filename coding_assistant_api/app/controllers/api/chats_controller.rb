@@ -43,8 +43,13 @@ class Api::ChatsController < ApplicationController
       payload: payload,
       rag_context: rag_context
     )
-
-    Llm::Client.new.generate(prompt: prompt)
+    
+    Llm::Client.new.generate(
+    prompt: prompt,
+    task_type: payload[:task_type],
+    selected_code: payload[:code],
+    rag_results: rag_context
+  )
   end
 
   def build_prompt(chat:, payload:, rag_context:)

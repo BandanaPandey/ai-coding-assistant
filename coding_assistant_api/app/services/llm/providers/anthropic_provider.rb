@@ -4,7 +4,7 @@ module Llm
       include HTTParty
       base_uri "https://api.anthropic.com"
 
-      def generate(prompt:, temperature: 0.7, max_tokens: 1000)
+      def generate(prompt:, model:, temperature:, max_tokens:)
         response = self.class.post(
           "/v1/messages",
           headers: {
@@ -13,7 +13,7 @@ module Llm
             "Content-Type" => "application/json"
           },
           body: {
-            model: ENV["LLM_MODEL"],
+            model: model,
             max_tokens: max_tokens,
             temperature: temperature,
             messages: [
@@ -21,7 +21,6 @@ module Llm
             ]
           }.to_json
         )
-
         JSON.parse(response.body)["content"][0]["text"]
       end
     end
