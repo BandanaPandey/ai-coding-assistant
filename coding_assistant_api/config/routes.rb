@@ -13,5 +13,7 @@ Rails.application.routes.draw do
         post :message
       end
     end
+
+    post "rag/index", to: "rag#index"
   end
 end
