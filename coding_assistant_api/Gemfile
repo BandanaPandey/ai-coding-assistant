@@ -55,4 +55,6 @@ group :development, :test do
   gem 'pgvector'
 
   gem 'neighbor'
+
+  gem "parser"
 end

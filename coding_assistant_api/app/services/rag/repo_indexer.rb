@@ -1,4 +1,5 @@
-#This scans your entire repo and stores embeddings.
+require "digest"
+
 module Rag
   class RepoIndexer
 
@@ -6,23 +7,47 @@ module Rag
       .rb .js .ts .py .go .java .cpp .rs
     ]
 
-    CHUNK_SIZE = 500
-    #Rag::RepoIndexer.new(Rails.root).index
     def initialize(repo_path)
       @repo_path = repo_path
     end
 
     def index
       files.each do |file|
-        content = File.read(file)
-        chunks(content).each do |chunk|
-          embedding = Embeddings::Client.new.embed(chunk)
-          CodeEmbedding.create!(
-            file_path: file,
-            content: chunk,
-            embedding: embedding
-          )
-        end
+        index_file(file)
+      end
+    end
+
+    def index_file(file)
+      return unless CODE_EXTENSIONS.include?(File.extname(file))
+
+      content = File.read(file)
+
+      file_hash = Digest::SHA256.hexdigest(content)
+
+      existing = CodeEmbedding.where(file_path: file).first
+
+      return if existing && existing.file_hash == file_hash
+
+      CodeEmbedding.where(file_path: file).delete_all
+
+      semantic_chunks = Rag::SemanticChunker
+                          .new(content)
+                          .chunks
+
+      semantic_chunks.each do |chunk|
+
+        embedding = Embeddings::Client
+                     .new
+                     .embed(chunk[:content])
+
+        CodeEmbedding.create!(
+          file_path: file,
+          content: chunk[:content],
+          embedding: embedding,
+          file_hash: file_hash,
+          start_line: chunk[:start_line]
+        )
+
       end
     end
 
@@ -31,10 +56,6 @@ module Rag
     def files
       Dir.glob("#{@repo_path}/**/*")
          .select { |f| CODE_EXTENSIONS.include?(File.extname(f)) }
-    end
-
-    def chunks(text)
-      text.scan(/.{1,#{CHUNK_SIZE}}/m)
     end
   end
 end

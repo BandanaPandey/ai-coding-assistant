@@ -353,6 +353,7 @@ DEPENDENCIES
   image_processing (~> 1.2)
   kamal
   neighbor
+  parser
   pg (~> 1.1)
   pgvector
   puma (>= 5.0)
