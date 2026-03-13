@@ -24,6 +24,10 @@
       {
         "command": "assistant-vscode-extension.generateTests",
         "title": "GOAT-AI: Generate Tests"
+      },
+      {
+        "command": "assistant-vscode-extension.indexRepository",
+        "title": "GOAT AI: Index Repository"
       }
     ],
     "menus": {
@@ -42,6 +46,11 @@
           "command": "assistant-vscode-extension.generateTests",
           "when": "editorHasSelection",
           "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "assistant-vscode-extension.indexRepository"
         }
       ]
     },

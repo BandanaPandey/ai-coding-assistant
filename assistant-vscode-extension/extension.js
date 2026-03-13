@@ -1,7 +1,8 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
-const { askAI } = require("./api");
+const { askAI, indexRepository } = require("./api");
+
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -23,10 +24,37 @@ function activate(context) {
     handleAiRequest('generate_tests');
   });
 
+  /*
+  NEW COMMAND
+  */
+  const indexRepoCommand = vscode.commands.registerCommand(
+    'assistant-vscode-extension.indexRepository',
+    async () => {
+
+      vscode.window.withProgress({
+        location: vscode.ProgressLocation.Notification,
+        title: "GOAT AI is indexing your repository...",
+        cancellable: false
+      }, async () => {
+        try {
+          const response = await indexRepository();
+          vscode.window.showInformationMessage(
+            response.message || "Repository indexing started"
+          );
+        } catch (error) {
+          vscode.window.showErrorMessage(
+            "Failed to start indexing: " + error.message
+          );
+        }
+      });
+    }
+  );
+
   context.subscriptions.push(
     explainCommand,
     refactorCommand,
-    generateTestsCommand
+    generateTestsCommand,
+    indexRepoCommand
   );
 }
 
