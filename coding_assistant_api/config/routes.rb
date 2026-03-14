@@ -15,5 +15,6 @@ Rails.application.routes.draw do
     end
 
     post "rag/index", to: "rag#index"
+    post "rag/index_file", to: "rag#index_file"
   end
 end
