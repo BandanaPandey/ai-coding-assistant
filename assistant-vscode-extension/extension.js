@@ -49,7 +49,31 @@ function activate(context) {
         cancellable: false
       }, async () => {
         try {
-          const response = await indexRepository();
+          let repoPath;
+
+          const editor = vscode.window.activeTextEditor;
+
+          if (editor) {
+            const workspaceFolder = vscode.workspace.getWorkspaceFolder(
+              editor.document.uri
+            );
+
+            repoPath = workspaceFolder?.uri.fsPath;
+          }
+
+          // fallback if no editor open
+          if (!repoPath && vscode.workspace.workspaceFolders?.length > 0) {
+            repoPath = vscode.workspace.workspaceFolders[0].uri.fsPath;
+          }
+
+          if (!repoPath) {
+            vscode.window.showErrorMessage(
+              "GOAT AI: Unable to determine repository root."
+            );
+            return;
+          }
+          
+          const response = await indexRepository(repoPath);
           vscode.window.showInformationMessage(
             response.message || "Incremental repository indexing started"
           );
@@ -74,15 +98,25 @@ function activate(context) {
  * Automatically index files when saved
  */
 function setupAutoIndexing(context) {
+  console.log("GOAT-AI auto indexing initialized");
   const disposable = vscode.workspace.onDidSaveTextDocument(async (document) => {
     try {
+      console.log("File saved:", document.uri.fsPath);
+      console.log("Language:", document.languageId);
       if (!SUPPORTED_LANGUAGES.includes(document.languageId)) {
         return;
       }
+      const repoPath = getRepoRoot(document);
       const filePath = document.uri.fsPath;
+      if (!repoPath) {
+        console.warn("GOAT-AI: Could not determine repo root");
+        return;
+      }
       console.log("GOAT-AI indexing file:", filePath);
+      console.log("GOAT-AI repo:", repoPath);
 
-      await indexFile(filePath);
+      await indexFile(repoPath, filePath);
+      console.log("GOAT-AI indexing finished");
 
     } catch (error) {
       console.error("Auto indexing failed:", error);
@@ -91,6 +125,20 @@ function setupAutoIndexing(context) {
   context.subscriptions.push(disposable);
 }
 
+function getRepoRoot(document) {
+
+  const workspaceFolder = vscode.workspace.getWorkspaceFolder(
+    document.uri
+  );
+  if (workspaceFolder) {
+    return workspaceFolder.uri.fsPath;
+  }
+  const folders = vscode.workspace.workspaceFolders;
+  if (folders && folders.length > 0) {
+    return folders[0].uri.fsPath;
+  }
+  return null;
+}
 
 /**
  * Common handler for all AI actions

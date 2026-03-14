@@ -18,18 +18,21 @@ async function askAI(payload) {
   return await response.json();
 }
 
-async function indexRepository() {
+async function indexRepository(repo_path) {
   const response = await fetch(`${BASE_URL}/api/rag/index`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json"
-    }
+    },
+    body: JSON.stringify({
+      repo_path: repo_path
+    })
   });
 
   return await response.json();
 }
 
-async function indexFile(filePath) {
+async function indexFile(repo_path, filePath) {
 
   const response = await fetch(`${BASE_URL}/api/rag/index_file`, {
     method: "POST",
@@ -37,6 +40,7 @@ async function indexFile(filePath) {
       "Content-Type": "application/json"
     },
     body: JSON.stringify({
+      repo_path: repo_path,
       file_path: filePath
     })
   });
