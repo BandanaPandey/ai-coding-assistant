@@ -45,17 +45,17 @@ function activate(context) {
 
       vscode.window.withProgress({
         location: vscode.ProgressLocation.Notification,
-        title: "GOAT AI is indexing your repository...",
+        title: "GOAT AI indexing repository (incremental)...",
         cancellable: false
       }, async () => {
         try {
           const response = await indexRepository();
           vscode.window.showInformationMessage(
-            response.message || "Repository indexing started"
+            response.message || "Incremental repository indexing started"
           );
         } catch (error) {
           vscode.window.showErrorMessage(
-            "Failed to start indexing: " + error.message
+            "Indexing failed: " + error.message
           );
         }
       });
