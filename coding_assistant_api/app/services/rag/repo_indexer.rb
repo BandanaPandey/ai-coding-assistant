@@ -41,6 +41,7 @@ module Rag
                      .embed(chunk[:content])
 
         CodeEmbedding.create!(
+          repo_path: @repo_path,
           file_path: file,
           content: chunk[:content],
           embedding: embedding,

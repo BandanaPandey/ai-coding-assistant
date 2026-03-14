@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_13_064200) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_14_121520) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -27,9 +27,11 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_13_064200) do
     t.vector "embedding", limit: 768
     t.string "file_hash"
     t.string "file_path"
+    t.string "repo_path"
     t.integer "start_line"
     t.datetime "updated_at", null: false
     t.index ["file_path"], name: "index_code_embeddings_on_file_path"
+    t.index ["repo_path"], name: "index_code_embeddings_on_repo_path"
   end
 
   create_table "messages", force: :cascade do |t|

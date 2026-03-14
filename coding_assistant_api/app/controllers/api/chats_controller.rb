@@ -8,6 +8,8 @@ class Api::ChatsController < ApplicationController
   def message
     chat = ChatSession.find(params[:id])
 
+    puts("inside message action")
+
     user_payload = {
       code: params[:code],
       task_type: params[:task_type],
@@ -35,14 +37,23 @@ class Api::ChatsController < ApplicationController
   private
 
   def generate_ai_response(chat, payload)
+    #rag_context = retrieve_repo_context(payload)
+    rag_context = Rag::ContextAssembler.new(
+          code: payload[:message],
+          task_type: payload[:task_type],
+          repo_path: payload[:repo_path]
+        ).build_context
+    #rag_context = []
 
-    rag_context = retrieve_repo_context(payload)
+    puts("RAG context: #{rag_context}")
 
     prompt = build_prompt(
       chat: chat,
       payload: payload,
       rag_context: rag_context
     )
+
+    puts("Generated prompt: #{prompt}")
     
     Llm::Client.new.generate(
     prompt: prompt,

@@ -8,15 +8,16 @@
 # We simulate that here.
 module Rag
   class ContextAssembler
-    def initialize(code:, task_type:)
+    def initialize(code:, task_type:, repo_path:)
       @code = code
       @task_type = task_type
+      @repo_path = repo_path 
     end
 
     def build_context
-      related = Retriever.search(search_query)
-      related_context = format_related_context(related)
-      format_context(@code, related_context)
+      Retriever.search(search_query, @repo_path)
+      # related_context = format_related_context(related)
+      # format_context(@code, related_context)
     end
 
     private
