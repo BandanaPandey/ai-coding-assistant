@@ -1,8 +1,18 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
-const { askAI, indexRepository } = require("./api");
+const { askAI, indexRepository, indexFile  } = require("./api");
 
+const SUPPORTED_LANGUAGES = [
+  "javascript",
+  "typescript",
+  "ruby",
+  "python",
+  "go",
+  "java",
+  "cpp",
+  "rust"
+];
 
 // This method is called when your extension is activated
 // Your extension is activated the very first time the command is executed
@@ -11,6 +21,8 @@ const { askAI, indexRepository } = require("./api");
  * @param {vscode.ExtensionContext} context
  */
 function activate(context) {
+
+  setupAutoIndexing(context);
 
   const explainCommand = vscode.commands.registerCommand('assistant-vscode-extension.explain', () => {
     handleAiRequest('explain');
@@ -57,6 +69,28 @@ function activate(context) {
     indexRepoCommand
   );
 }
+
+/**
+ * Automatically index files when saved
+ */
+function setupAutoIndexing(context) {
+  const disposable = vscode.workspace.onDidSaveTextDocument(async (document) => {
+    try {
+      if (!SUPPORTED_LANGUAGES.includes(document.languageId)) {
+        return;
+      }
+      const filePath = document.uri.fsPath;
+      console.log("GOAT-AI indexing file:", filePath);
+
+      await indexFile(filePath);
+
+    } catch (error) {
+      console.error("Auto indexing failed:", error);
+    }
+  });
+  context.subscriptions.push(disposable);
+}
+
 
 /**
  * Common handler for all AI actions

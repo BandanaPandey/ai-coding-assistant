@@ -29,5 +29,20 @@ async function indexRepository() {
   return await response.json();
 }
 
-module.exports = { askAI, indexRepository };
+async function indexFile(filePath) {
 
+  const response = await fetch(`${BASE_URL}/api/rag/index_file`, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      file_path: filePath
+    })
+  });
+
+  return await response.json();
+}
+
+
+module.exports = { askAI, indexRepository, indexFile };
