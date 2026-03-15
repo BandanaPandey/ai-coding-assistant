@@ -29,6 +29,14 @@
       {
         "command": "assistant-vscode-extension.indexRepository",
         "title": "GOAT AI: Index Repository"
+      },
+      {
+        "command": "assistant-vscode-extension.login",
+        "title": "GOAT AI: Login"
+      },
+      {
+        "command": "assistant-vscode-extension.logout",
+        "title": "GOAT AI: Logout"
       }
     ],
     "menus": {
@@ -45,6 +53,16 @@
         },
         {
           "command": "assistant-vscode-extension.generateTests",
+          "when": "editorHasSelection",
+          "group": "navigation"
+        },
+        {
+          "command": "assistant-vscode-extension.login",
+          "when": "editorHasSelection",
+          "group": "navigation"
+        },
+        {
+          "command": "assistant-vscode-extension.logout",
           "when": "editorHasSelection",
           "group": "navigation"
         }

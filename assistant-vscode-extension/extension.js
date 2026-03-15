@@ -1,6 +1,8 @@
 // The module 'vscode' contains the VS Code extensibility API
 // Import the module and reference it with the alias vscode in your code below
 const vscode = require('vscode');
+const { login } = require("./src/auth/login");
+const { logout } = require("./src/auth/logout");
 const { askAI, indexRepository, indexFile  } = require("./api");
 
 const SUPPORTED_LANGUAGES = [
@@ -25,15 +27,15 @@ function activate(context) {
   setupAutoIndexing(context);
 
   const explainCommand = vscode.commands.registerCommand('assistant-vscode-extension.explain', () => {
-    handleAiRequest('explain');
+    handleAiRequest(context, 'explain');
   });
 
   const refactorCommand = vscode.commands.registerCommand('assistant-vscode-extension.refactor', () => {
-    handleAiRequest('refactor');
+    handleAiRequest(context, 'refactor');
   });
 
   const generateTestsCommand = vscode.commands.registerCommand('assistant-vscode-extension.generateTests', () => {
-    handleAiRequest('generate_tests');
+    handleAiRequest(context,'generate_tests');
   });
 
   /*
@@ -86,11 +88,21 @@ function activate(context) {
     }
   );
 
+  const loginCommand = vscode.commands.registerCommand('assistant-vscode-extension.login', () => {
+    login(context);
+  });
+
+  const logoutCommand = vscode.commands.registerCommand('assistant-vscode-extension.logout', () => {
+    logout(context);
+  });
+
   context.subscriptions.push(
     explainCommand,
     refactorCommand,
     generateTestsCommand,
-    indexRepoCommand
+    indexRepoCommand,
+    loginCommand,
+    logoutCommand
   );
 }
 
@@ -143,7 +155,7 @@ function getRepoRoot(document) {
 /**
  * Common handler for all AI actions
  */
-async function handleAiRequest(taskType) {
+async function handleAiRequest(context, taskType) {
   try {
     const editor = vscode.window.activeTextEditor;
 
@@ -177,7 +189,7 @@ async function handleAiRequest(taskType) {
     }, async () => {
 
       //const result = await askAI(selection, taskType);
-      const result = await askAI({
+      const result = await askAI(context, {
         code: selection,
         task_type: taskType,
         file_path: filePath,

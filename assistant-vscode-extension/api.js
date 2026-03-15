@@ -1,12 +1,17 @@
 const BASE_URL = "http://localhost:3000";
+const { getToken } = require("./src/auth/tokenManager");
 
-async function askAI(payload) {
+async function askAI(context, payload) {
+  const token = await getToken(context);
+  if (!token) {
+    throw new Error("Not authenticated. Run GOAT AI: Login");
+  }
+  console.log("Token retrieved in askAI:", token);
   const response = await fetch(`${BASE_URL}/api/chats/1/message`, {
 				method: 'POST',
 				headers: {
-				'Content-Type': 'application/json',
-				// Optional auth header:
-				// 'Authorization': 'Bearer YOUR_API_KEY'
+				  "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
 				},
 				body: JSON.stringify(payload)
 	    });
