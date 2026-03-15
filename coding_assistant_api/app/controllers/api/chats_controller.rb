@@ -1,12 +1,12 @@
 # app/controllers/api/chats_controller.rb
-class Api::ChatsController < ApplicationController
+class Api::ChatsController < Api::BaseController
   def create
-    chat = ChatSession.create!(title: "New Chat")
+    chat = current_user.chat_sessions.create!(title: "New Chat")
     render json: chat
   end
 
   def message
-    chat = ChatSession.find(params[:id])
+    chat = current_user.chat_sessions.find(params[:id])
 
     puts("inside message action")
 
