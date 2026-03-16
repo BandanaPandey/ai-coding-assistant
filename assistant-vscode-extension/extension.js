@@ -75,7 +75,7 @@ function activate(context) {
             return;
           }
           
-          const response = await indexRepository(repoPath);
+          const response = await indexRepository(context,repoPath);
           vscode.window.showInformationMessage(
             response.message || "Incremental repository indexing started"
           );
@@ -127,7 +127,7 @@ function setupAutoIndexing(context) {
       console.log("GOAT-AI indexing file:", filePath);
       console.log("GOAT-AI repo:", repoPath);
 
-      await indexFile(repoPath, filePath);
+      await indexFile(context,repoPath, filePath);
       console.log("GOAT-AI indexing finished");
 
     } catch (error) {

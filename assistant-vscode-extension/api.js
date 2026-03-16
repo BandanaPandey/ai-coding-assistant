@@ -23,11 +23,13 @@ async function askAI(context, payload) {
   return await response.json();
 }
 
-async function indexRepository(repo_path) {
+async function indexRepository(context,repo_path) {
+  const token = await getToken(context);
   const response = await fetch(`${BASE_URL}/api/rag/index`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
     },
     body: JSON.stringify({
       repo_path: repo_path
@@ -37,12 +39,14 @@ async function indexRepository(repo_path) {
   return await response.json();
 }
 
-async function indexFile(repo_path, filePath) {
+async function indexFile(context, repo_path, filePath) {
+  const token = await getToken(context);
 
   const response = await fetch(`${BASE_URL}/api/rag/index_file`, {
     method: "POST",
     headers: {
-      "Content-Type": "application/json"
+      "Content-Type": "application/json",
+      "Authorization": `Bearer ${token}`
     },
     body: JSON.stringify({
       repo_path: repo_path,
