@@ -1,4 +1,4 @@
-class Api::RagController < ApplicationController
+class Api::RagController < Api::BaseController
   def index
     puts("RAG Controller index action called")
     repo_path = params[:repo_path]
@@ -7,9 +7,17 @@ class Api::RagController < ApplicationController
       return render json: { error: "Invalid repo path" }, status: 400
     end
 
-    #RepoIndexJob.perform_later(repo_path)
-    RepoIndexJob.perform_now(repo_path)
-    render json: { status: "indexing started", repo_path: repo_path}
+    repository = current_user.repositories.find_or_create_by!(
+      repo_path: repo_path
+    )
+
+    #RepoIndexJob.perform_later(user_id: current_user.id, repository_id: repository.id)
+    RepoIndexJob.perform_now(user_id: current_user.id, repository_id: repository.id)
+    render json: {
+      status: "indexing started",
+      repository_id: repository.id,
+      repo_path: repo_path
+    }
   end
 
   def index_file
@@ -21,10 +29,21 @@ class Api::RagController < ApplicationController
       return render json: { error: "Missing repo_path or file_path" }, status: 400
     end
 
-    Rag::RepoIndexer.new(repo_path).index_file(file_path)
+    repository = current_user.repositories.find_by(
+      repo_path: repo_path
+    )
+
+    unless repository
+      return render json: { error: "Repository not registered" }, status: 404
+    end
+
+    Rag::RepoIndexer.new(user: current_user,repository: repository)
+                    .index_file(file_path, content)
 
     render json: {
-      message: "File indexed successfully"
+      message: "File indexed successfully",
+      repository_id: repository.id,
+      file_path: file_path
     }
   end
 end

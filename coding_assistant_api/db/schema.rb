@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_03_15_080248) do
+ActiveRecord::Schema[8.1].define(version: 2026_03_16_052938) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
   enable_extension "vector"
@@ -29,11 +29,13 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_080248) do
     t.vector "embedding", limit: 768
     t.string "file_hash"
     t.string "file_path"
-    t.string "repo_path"
+    t.bigint "repository_id"
     t.integer "start_line"
     t.datetime "updated_at", null: false
+    t.bigint "user_id"
     t.index ["file_path"], name: "index_code_embeddings_on_file_path"
-    t.index ["repo_path"], name: "index_code_embeddings_on_repo_path"
+    t.index ["repository_id"], name: "index_code_embeddings_on_repository_id"
+    t.index ["user_id"], name: "index_code_embeddings_on_user_id"
   end
 
   create_table "messages", force: :cascade do |t|
@@ -45,6 +47,14 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_080248) do
     t.index ["chat_session_id"], name: "index_messages_on_chat_session_id"
   end
 
+  create_table "repositories", force: :cascade do |t|
+    t.datetime "created_at", null: false
+    t.string "repo_path"
+    t.datetime "updated_at", null: false
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_repositories_on_user_id"
+  end
+
   create_table "users", force: :cascade do |t|
     t.string "api_key"
     t.datetime "created_at", null: false
@@ -54,5 +64,8 @@ ActiveRecord::Schema[8.1].define(version: 2026_03_15_080248) do
   end
 
   add_foreign_key "chat_sessions", "users"
+  add_foreign_key "code_embeddings", "repositories"
+  add_foreign_key "code_embeddings", "users"
   add_foreign_key "messages", "chat_sessions"
+  add_foreign_key "repositories", "users"
 end

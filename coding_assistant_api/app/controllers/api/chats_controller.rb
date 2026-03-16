@@ -19,12 +19,20 @@ class Api::ChatsController < Api::BaseController
       surrounding_code: params[:surrounding_code]
     }
 
+    repository = current_user.repositories.find_by(
+      repo_path: params[:repo_path]
+    )
+
+    unless repository
+      return render json: { error: "Repository not registered" }, status: 404
+    end
+    
     chat.messages.create!(
       role: "user",
       content: user_payload.to_json
     )
 
-    ai_response = generate_ai_response(chat, user_payload)
+    ai_response = generate_ai_response(repository, chat, user_payload)
 
     chat.messages.create!(
       role: "assistant",
@@ -36,12 +44,13 @@ class Api::ChatsController < Api::BaseController
 
   private
 
-  def generate_ai_response(chat, payload)
+  def generate_ai_response(repository, chat, payload)
     #rag_context = retrieve_repo_context(payload)
     rag_context = Rag::ContextAssembler.new(
+          current_user: current_user,
+          repository: repository,
           code: payload[:message],
-          task_type: payload[:task_type],
-          repo_path: payload[:repo_path]
+          task_type: payload[:task_type]
         ).build_context
     #rag_context = []
 

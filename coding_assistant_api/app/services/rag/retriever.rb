@@ -1,10 +1,11 @@
 #This finds most relevant code chunks.
 module Rag
   class Retriever
-    def self.search(query,repo_path,limit: 5)
+    def self.search(query, user_id:, repository_id:,limit: 5)
       embedding = Embeddings::Client.new.embed(query)
       results = CodeEmbedding
-              .where(repo_path: repo_path)
+              .where(user_id: user_id)
+              .where(repository_id: repository_id)
               .order(
                 Arel.sql("embedding <-> '#{embedding}'")
               )

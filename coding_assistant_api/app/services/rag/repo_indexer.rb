@@ -7,8 +7,9 @@ module Rag
       .rb .js .ts .py .go .java .cpp .rs
     ]
 
-    def initialize(repo_path)
-      @repo_path = repo_path
+    def initialize(user:, repository:)
+      @user = user
+      @repository = repository
     end
 
     def index
@@ -17,18 +18,25 @@ module Rag
       end
     end
 
-    def index_file(file)
+    def index_file(file, content=nil)
       return unless CODE_EXTENSIONS.include?(File.extname(file))
 
       content = File.read(file)
 
       file_hash = Digest::SHA256.hexdigest(content)
 
-      existing = CodeEmbedding.where(file_path: file).first
+      existing = CodeEmbedding
+                .where(user_id: @user.id)
+                .where(repository_id: @repository.id)
+                .where(file_path: file).first
 
       return if existing && existing.file_hash == file_hash
 
-      CodeEmbedding.where(file_path: file).delete_all
+      CodeEmbedding
+        .where(user_id: @user.id)
+        .where(repository_id: @repository.id)
+        .where(file_path: file)
+        .delete_all
 
       semantic_chunks = Rag::SemanticChunker
                           .new(content)
@@ -41,7 +49,8 @@ module Rag
                      .embed(chunk[:content])
 
         CodeEmbedding.create!(
-          repo_path: @repo_path,
+          user_id: @user.id,
+          repository_id: @repository.id,
           file_path: file,
           content: chunk[:content],
           embedding: embedding,
@@ -55,7 +64,7 @@ module Rag
     private
 
     def files
-      Dir.glob("#{@repo_path}/**/*")
+      Dir.glob("#{@repository.repo_path}/**/*")
          .select { |f| CODE_EXTENSIONS.include?(File.extname(f)) }
     end
   end

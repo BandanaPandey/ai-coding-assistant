@@ -1,5 +1,6 @@
 class User < ApplicationRecord
   has_many :chat_sessions, dependent: :destroy
+  has_many :repositories, dependent: :destroy
 
   before_create :generate_api_key
 
